@@ -14,7 +14,8 @@ matplotlib.rc('text', usetex=True)
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-
+import math
+import random
 
 def figsave(name):
     for figtype in FIGTYPES:
@@ -196,11 +197,48 @@ def run_experiment(particles, steps):
                 particles[pair[0]], particles[pair[1]])
         # ftime = traceall(particles,structure)
         f_time = tracechanged(particles, structure, f_time, pairs, clean=False)
-    print 1.*inner_collide_counter/steps
+    # print 1.*inner_collide_counter/steps
     return r_s, e_s
+
+
+def random_vec(length):
+
+    phi = random.random()
+    psi = random.random()
+
+    x = length * math.sin(phi)*math.cos(psi)
+    y = length * math.cos(phi)*math.cos(psi)
+    z = length * math.sin(psi)
+
+    return x, y, z
+
+
+def run_exp_get_e_mean(n, m_0, m_in):
+
+    steps = 200000
+    last_steps = 5000
+
+    m_i = m_in / n
+    v_i = n**0.5
+
+    particles = [Particle(m=m_0, R=-1, v=(0., 0., 0.), r=(0., 0., 0.))]
+    for i in range(n):
+        particles.append(
+            Particle(m=m_i, R=0.1, v=random_vec(v_i), r=random_vec(0.5))
+        )
+    r_s, e_s = run_experiment(particles, steps=steps)
+
+    e_r = [(np.array(e_s_i[-last_steps:]).mean(),
+            np.array(e_s_i[-last_steps:]).std())
+           for e_s_i in e_s]
+
+    return e_r
 
 def main():
 
+    print run_exp_get_e_mean(2, 1., 1.)
+
+    return
     # particles = [
     #     Particle(m=1., R=-1., v=(0., 0.0, 0.0), r=(0., 0., 0.)),
     #     # Particle(m=0.25, R=0.1, v=(0., 1., 1.), r=(0.1, 0., 0.)),
